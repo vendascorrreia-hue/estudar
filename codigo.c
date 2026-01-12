@@ -1,44 +1,49 @@
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
-int func(char *estrutura, char *onde){
-    char comand[600];
-    sprintf(comand, "echo \"%s\" >> %s", estrutura, onde);
-    return system(comand);
+void gravar_linha(char *text, FILE *file) {
+    if (file != NULL) {
+        fprintf(file, "%s\n", text);
+        fflush(file); 
+    }
 }
 
-int main(){
-    char topico[50];
-    char arquivo[50];
-    char conteudo[500];
+int main() {
+    char topico[200];
+    char onde[50];
+    char texto[800];
+    FILE *file;
 
-    while (1){
-        printf("digite o nome do topico> ");
-        fgets(topico, sizeof(topico), stdin);
-        topico[strcspn(topico, "\n")] = '\0';
-        
-        if (strcmp(topico, "exit") == 0){
-            break;
-        }
+    printf("Digite o nome do topico: ");
+    fgets(topico, sizeof(topico), stdin);
+    topico[strcspn(topico, "\n")] = '\0';
 
-        printf("e em qual arquivo colocar? ");
-        fgets(arquivo, sizeof(arquivo), stdin);
-        arquivo[strcspn(arquivo, "\n")] = '\0';
+    if (strcmp(topico, "exit") == 0) return 0;
 
-        func(topico, arquivo);
+    printf("E em qual arquivo? ");
+    fgets(onde, sizeof(onde), stdin);
+    onde[strcspn(onde, "\n")] = '\0';
 
-        while (1){
-            printf("> ");
-            fgets(conteudo, sizeof(conteudo), stdin);
-            conteudo[strcspn(conteudo, "\n")] = '\0';
-            
-            if (strcmp(conteudo, "EOF") == 0){
-                break;
-            }
-            
-            func(conteudo, arquivo);
-        }    
+    file = fopen(onde, "a");
+    if (file == NULL) {
+        perror("Erro");
+        return 1;
     }
+
+    gravar_linha(topico, file);
+
+    while (1) {
+        printf("> ");
+        if (fgets(texto, sizeof(texto), stdin) == NULL) break;
+        
+        texto[strcspn(texto, "\n")] = '\0';
+
+        if (strcmp(texto, "EOF") == 0) break;
+
+        gravar_linha(texto, file);
+    }
+
+    fclose(file);
     return 0;
 }
